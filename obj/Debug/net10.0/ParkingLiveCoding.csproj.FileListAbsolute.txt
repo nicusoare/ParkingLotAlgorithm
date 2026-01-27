@@ -1,0 +1,14 @@
+C:\Users\nicus\source\repos\ParkingLiveCoding\bin\Debug\net10.0\ParkingLiveCoding.exe
+C:\Users\nicus\source\repos\ParkingLiveCoding\bin\Debug\net10.0\ParkingLiveCoding.deps.json
+C:\Users\nicus\source\repos\ParkingLiveCoding\bin\Debug\net10.0\ParkingLiveCoding.runtimeconfig.json
+C:\Users\nicus\source\repos\ParkingLiveCoding\bin\Debug\net10.0\ParkingLiveCoding.dll
+C:\Users\nicus\source\repos\ParkingLiveCoding\bin\Debug\net10.0\ParkingLiveCoding.pdb
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.AssemblyInfoInputs.cache
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.AssemblyInfo.cs
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.csproj.CoreCompileInputs.cache
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.dll
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\refint\ParkingLiveCoding.dll
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.pdb
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ParkingLiveCoding.genruntimeconfig.cache
+C:\Users\nicus\source\repos\ParkingLiveCoding\obj\Debug\net10.0\ref\ParkingLiveCoding.dll
