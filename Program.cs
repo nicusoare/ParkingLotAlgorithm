@@ -35,15 +35,15 @@ public class Program
             new ParkingSpot(12,VehicleType.Truck),
             new ParkingSpot(13,VehicleType.Motorcycle),
             new ParkingSpot(14,VehicleType.Motorcycle),
-            new ParkingSpot(15,VehicleType.Motorcycle)            
+            new ParkingSpot(15,VehicleType.Motorcycle)
         });
 
         var lot = new ParkingLot(new[] { level1, level2 });
 
         var vehicles = new Vehicle[VEHICLES_COUNT];
         var parked = new ParkResult(false, null, null);
-         //vs Count() ?
-        for (int i=0; i < vehicles.Length; i++)
+        //vs Count() ?
+        for (int i = 0; i < vehicles.Length; i++)
         {
             var vehicleTypes = Enum.GetValues(typeof(VehicleType)).Length;
             var r = rnd.Next(vehicleTypes); //0,1,2
@@ -198,7 +198,6 @@ public class Program
     public class Level
     {
         public int Id { get; }
-        //public int Capacity { get; }
 
         //backing field
         private readonly List<ParkingSpot> _spots;
@@ -211,26 +210,12 @@ public class Program
             _spots = [.. spots];
         }
                 
-        /// <returns> levelId, spotId </returns>
         public bool TryPark(Vehicle vehicle, out ParkingSpot? spot)
         {
             spot = _spots.FirstOrDefault(t => t.CanFit(vehicle));
                         
             return (spot != null && spot.Park(vehicle));            
         }
-
-        //public bool Leave(string license)
-        //{
-        //    var spot = _spots.FirstOrDefault(t => t.Vehicle?.LicensePlate == license);
-            
-        //    if (spot != null && spot.Vehicle != null)
-        //    {                
-        //        spot.Leave();
-        //        return true;
-        //    }
-            
-        //    return false;
-        //}
 
         public bool Leave(int spotId)
         {
@@ -250,9 +235,7 @@ public class Program
         private readonly List<Level> _levels;
 
         record ParkingLocation(int LevelId, int SpotId);
-        /// <summary>
-        /// Params: license, levelId, spotId
-        /// </summary>
+
         private readonly Dictionary<string, ParkingLocation> _occupancy = new ();
 
         public ParkingLot(IEnumerable<Level> levels)
@@ -260,7 +243,6 @@ public class Program
             _levels = [.. levels];
         }
 
-        //public ParkResult TryPark(Vehicle vehicle, out int? levelParked, out int? spotId)
         public ParkResult TryPark(Vehicle vehicle)
         {
             int? levelParked = null;
@@ -287,25 +269,20 @@ public class Program
 
         public ParkingAvailability GetStatus()
         {
-            int cars=0, trucks=0, motorcycles=0;
-            
-            foreach (var level in _levels)
-            {
-                cars += level.GetLevelStatus(VehicleType.Car);
-                trucks += level.GetLevelStatus(VehicleType.Truck);
-                motorcycles += level.GetLevelStatus(VehicleType.Motorcycle);
-            }
+            var cars = _levels.Sum(level => level.GetLevelStatus(VehicleType.Car));
+            var trucks = _levels.Sum(level => level.GetLevelStatus(VehicleType.Truck));
+            var motorcycles = _levels.Sum(level => level.GetLevelStatus(VehicleType.Motorcycle));
 
             return new ParkingAvailability(cars + trucks + motorcycles, cars, trucks, motorcycles);
         }
 
         public bool Leave(string license)
         {
-            var licenseIsParked = _occupancy.TryGetValue(license, out var pair);
+            var licenseIsParked = _occupancy.TryGetValue(license, out var parkedLocation);
             if (!licenseIsParked)
                 return false;
 
-            var(levelId, spotId) = pair;
+            (int levelId, int spotId) = parkedLocation;
             var level = _levels.FirstOrDefault(t=>t.Id==levelId);
 
             if (level != null && level.Leave(spotId))
