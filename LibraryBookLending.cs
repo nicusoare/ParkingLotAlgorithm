@@ -7,11 +7,11 @@
 //    public class LibraryBookLending
 //    {
 //        /*
-//        Simplified book lending system:
+//            Simplified book lending system:
 //        - allows book register (title, author, category)
 //        - allows member register
 //        - allows borrowing and returning of books
-//        -       - doesn't allow borrowing of an borrowed book
+//        - doesn't allow borrowing of an borrowed book
 //        - displays all books: available VS borrowed
 //         */
 
@@ -123,7 +123,7 @@
 
 //                return book.Borrow(member);
 //            }
-//    }
+//        }
 
 //        public static void Main()
 //        {

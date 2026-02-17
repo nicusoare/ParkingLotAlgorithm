@@ -16,7 +16,6 @@ namespace ParkingLiveCoding
 {
     public class NewParkingLot
     {
-        private Dictionary<string, ParkLocation?> _occupancy = new();
         public static void Main()
         {
             var level1 = new Level(0, [
@@ -58,12 +57,11 @@ namespace ParkingLiveCoding
                 new Car("c6"),
                 new Car("c7"),
                 new Car("c8"),
-                new Car("c9"),
-                new Car("c10"),
+                new Car("c9"),                
                 new Truck("t1"),
                 new MotorCycle("m1"),
                 new MotorCycle("m2"),
-                new MotorCycle("m2")
+                new MotorCycle("m3")
             };
 
             DisplayLotStatus(lot.GetStatus());
@@ -74,30 +72,76 @@ namespace ParkingLiveCoding
                 DisplayParkedMessage(vehicle, result);
             }
 
+            var vehicleThatDoesNotFit = new Car("c10");
+            DisplayParkedMessage(vehicleThatDoesNotFit, lot.TryPark(vehicleThatDoesNotFit));
+
+            var duplicateVehicle = new MotorCycle("m3");
+            DisplayParkedMessage(duplicateVehicle, lot.TryPark(duplicateVehicle));
+
+
             DisplayLotStatus(lot.GetStatus());
 
-            DisplayLeaveMessage(lot.Leave("c1"),"c1");
+            DisplayLeaveMessage(lot.Leave("c1"), "c1");
             DisplayLeaveMessage(lot.Leave("c1"), "c1");
 
             DisplayLotStatus(lot.GetStatus());
         }
 
-        public static void DisplayParkedMessage(Vehicle vehicle, ParkResult res)
+        public class Result
+        {
+            public bool IsSuccess { get; }
+            public string ErrorMessage { get; }
+
+            protected Result(bool isSuccess, string errorMessage)
+            {
+                IsSuccess = isSuccess;
+                ErrorMessage = errorMessage;
+            }
+
+
+            public static Result Success() => new Result(true, string.Empty);
+            public static Result Failure(string error) => new Result(false, error);
+        }
+
+        public class Result<T> : Result
+        {
+            private readonly T? _value;
+
+            public T Value
+            {
+                get
+                {
+                    if (!IsSuccess)
+                        throw new InvalidOperationException("Cannot access Value of a failed result");
+                    return _value!;
+                }
+            }
+
+            protected Result(bool isSuccess, T? value, string error) 
+                : base(isSuccess, error)
+            {
+                _value = value;
+            }
+
+            public static Result<T> Success(T value) => new (true, value, string.Empty);
+            public static Result<T> Failure(string error) => new Result<T>(false, default, error);
+        }
+
+        public static void DisplayParkedMessage(Vehicle vehicle, Result<ParkLocation> res)
         {
             if (!res.IsSuccess)
-            {
-                var duplicateMesage = res.IsDuplicate ? "This license plate is already parked" : "";
-                Console.WriteLine($"Cannot park {vehicle.Type.ToString()} with license {vehicle.LicensePlate}. {duplicateMesage}");                
+            {                
+                Console.WriteLine($"Cannot park {vehicle.Type.ToString()} with license {vehicle.LicensePlate}. {res.ErrorMessage}");
             }
             else
             {
-                Console.WriteLine($"{vehicle.Type.ToString()} with license {vehicle.LicensePlate} parked on Level {res.LevelId}  - Spot {res.SpotId}");
+                Console.WriteLine($"{vehicle.Type.ToString()} with license {vehicle.LicensePlate} parked on Level {res.Value.LevelId}  - Spot {res.Value.SpotId}");
             }
         }
 
         public static void DisplayLotStatus(ParkingLotAvailability availability)
         {
-            Console.WriteLine($"Free spots total: {availability.Car+availability.Truck+availability.Motorcycle}. Cars:{availability.Car}, Trucks: {availability.Truck}, Motorcycles: {availability.Motorcycle}");
+            Console.WriteLine($"Free spots total: {availability.Car + availability.Truck + availability.Motorcycle}. Cars:{availability.Car}, Trucks: {availability.Truck}, Motorcycles: {availability.Motorcycle}");
         }
 
         public static void DisplayLeaveMessage(bool success, string license)
@@ -119,7 +163,6 @@ namespace ParkingLiveCoding
             Motorcycle
         }
 
-        public record ParkResult(bool IsSuccess, int? LevelId, int? SpotId, bool IsDuplicate = false);
         public record ParkLocation(int LevelId, int SpotId);
 
         public record ParkingLotAvailability(int Car, int Truck, int Motorcycle);
@@ -157,7 +200,7 @@ namespace ParkingLiveCoding
             public ParkingSpot(int id, VehicleType type)
             {
                 Id = id;
-                Type = type;                
+                Type = type;
             }
 
             public bool CanFit(Vehicle vehicle)
@@ -165,13 +208,13 @@ namespace ParkingLiveCoding
                 return IsAvailable && vehicle.Type == Type;
             }
 
-            public bool TryPark(Vehicle vehicle)
+            public Result TryPark(Vehicle vehicle)
             {
                 if (!CanFit(vehicle))
-                    return false;
+                    return Result.Failure("Vehicle does not fit into requested parking spot");
 
                 Vehicle = vehicle;
-                return true;
+                return Result.Success();
             }
 
             public bool Leave()
@@ -197,7 +240,7 @@ namespace ParkingLiveCoding
                     throw new ArgumentOutOfRangeException(nameof(id), "Id must be >=0");
 
                 ArgumentNullException.ThrowIfNull(spots);
-                                    
+
                 _spots = [.. spots];
 
                 if (_spots.Count == 0)
@@ -206,11 +249,16 @@ namespace ParkingLiveCoding
                 Id = id;
             }
 
-            public bool TryPark(Vehicle vehicle, out ParkingSpot? spot)
+            public Result<ParkLocation> TryPark(Vehicle vehicle)
             {
-                spot = _spots.FirstOrDefault(s => s.CanFit(vehicle));
+                var spot = _spots.FirstOrDefault(s => s.CanFit(vehicle));
 
-                return spot != null && spot.TryPark(vehicle);
+                if (spot == null)
+                    return Result<ParkLocation>.Failure("No parking spot available for this vehicle");
+
+                return spot.TryPark(vehicle).IsSuccess
+                    ? Result<ParkLocation>.Success(new ParkLocation(Id, spot.Id))
+                    : Result<ParkLocation>.Failure("No parking spot available for this vehicle");
             }
 
             public bool Leave(int spotId)
@@ -233,47 +281,54 @@ namespace ParkingLiveCoding
 
             public ParkingLot(IEnumerable<Level> levels)
             {
+                ArgumentNullException.ThrowIfNull(levels);
+
+                if (!levels.Any())
+                {
+                    throw new ArgumentException("Parking lot levels cannot be empty", nameof(levels));
+                }
                 _levels = [.. levels];
             }
 
-            public ParkResult TryPark(Vehicle vehicle)
+            public Result<ParkLocation> TryPark(Vehicle vehicle)
             {
                 if (_occupancy.ContainsKey(vehicle.LicensePlate))
                 {
-                    //TODO: refactor with Result pattern
-                    return new ParkResult(false, null, null, true);
+                    return Result<ParkLocation>.Failure("License plate already parked");
                 }
 
-                foreach(var level in _levels)
+                foreach (var level in _levels)
                 {
-                    if(level.TryPark(vehicle, out var spot))
+                    var result = level.TryPark(vehicle);
+                    if (result.IsSuccess)
                     {
-                        _occupancy.Add(vehicle.LicensePlate, new ParkLocation(level.Id, spot.Id));
+                        _occupancy.Add(vehicle.LicensePlate, result.Value);
 
-                        return new ParkResult(true, level.Id, spot.Id);
+                        return result;
                     }
                 }
-                return new ParkResult(false, null, null);
+
+                return Result<ParkLocation>.Failure("No available spot found");
             }
 
             public bool Leave(string license)
             {
-                var licenseIsParked= _occupancy.TryGetValue(license, out var parkedLocation);
+                var licenseIsParked = _occupancy.TryGetValue(license, out var parkedLocation);
 
                 if (!licenseIsParked)
                     return false;
 
                 (int levelId, int spotId) = parkedLocation;
 
-                var level = _levels.FirstOrDefault(l=>l.Id==levelId);
+                var level = _levels.FirstOrDefault(l => l.Id == levelId);
 
-                if(level!=null && level.Leave(spotId))
+                if (level != null && level.Leave(spotId))
                 {
                     _occupancy.Remove(license);
                     return true;
                 }
                 return false;
-            }            
+            }
 
             public ParkingLotAvailability GetStatus()
             {
