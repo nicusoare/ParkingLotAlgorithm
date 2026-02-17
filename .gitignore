@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/obj/Debug/net10.0/ParkingLiveCoding.AssemblyInfo.cs
+/obj/Debug/net10.0/ParkingLiveCoding.csproj.FileListAbsolute.txt
+/obj/Debug/net10.0/ParkingLiveCoding.sourcelink.json
