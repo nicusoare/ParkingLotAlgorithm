@@ -16,7 +16,7 @@ namespace ParkingLiveCoding
 {
     public class NewParkingLot
     {
-        public static void Main()
+        public static void Start()
         {
             var level1 = new Level(0, [
                 new ParkingSpot(1,VehicleType.Car),
@@ -141,7 +141,7 @@ namespace ParkingLiveCoding
 
         public static void DisplayLotStatus(ParkingLotAvailability availability)
         {
-            Console.WriteLine($"Free spots total: {availability.Car + availability.Truck + availability.Motorcycle}. Cars:{availability.Car}, Trucks: {availability.Truck}, Motorcycles: {availability.Motorcycle}");
+            Console.WriteLine($"Free spots total: {availability.Total}. Cars:{availability.Car}, Trucks: {availability.Truck}, Motorcycles: {availability.Motorcycle}");
         }
 
         public static void DisplayLeaveMessage(bool success, string license)
@@ -165,7 +165,10 @@ namespace ParkingLiveCoding
 
         public record ParkLocation(int LevelId, int SpotId);
 
-        public record ParkingLotAvailability(int Car, int Truck, int Motorcycle);
+        public record ParkingLotAvailability(int Car, int Truck, int Motorcycle)
+        {
+            public int Total = Car + Truck + Motorcycle;
+        }
 
         public abstract class Vehicle
         {
